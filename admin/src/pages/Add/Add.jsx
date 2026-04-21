@@ -1,17 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import "./Add.css";
-import { assets } from "../../assets/assets";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useContext } from "react";
 import { StoreContext } from "../../context/StoreContext";
-import { useEffect } from "react";
-import {useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-const Add = ({url}) => {
-  const navigate=useNavigate();
-  const {token,admin} = useContext(StoreContext);
-  const [image, setImage] = useState(false);
+const Add = () => {
+  const navigate = useNavigate();
+  const { token, admin } = useContext(StoreContext);
+
+  const BASE_URL = import.meta.env.VITE_API_URL;
+
+  const [image, setImage] = useState(null);
   const [data, setData] = useState({
     name: "",
     description: "",
@@ -19,118 +19,77 @@ const Add = ({url}) => {
     category: "Salad",
   });
 
-  const onChangeHandler = (event) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    setData((data) => ({ ...data, [name]: value }));
-  };
+  useEffect(() => {
+    if (!admin || !token) navigate("/");
+  }, [admin, token]);
 
-  const onSubmitHandler = async (event) => {
-    event.preventDefault();
+  const submit = async (e) => {
+    e.preventDefault();
+
+    if (!image) return toast.error("Upload image ❌");
+
     const formData = new FormData();
-    formData.append("name", data.name);
-    formData.append("description", data.description);
-    formData.append("price", Number(data.price));
-    formData.append("category", data.category);
+    Object.keys(data).forEach((key) =>
+      formData.append(key, data[key])
+    );
     formData.append("image", image);
 
-    const response = await axios.post(`${url}/api/food/add`, formData,{headers:{token}});
-    if (response.data.success) {
-      setData({
-        name: "",
-        description: "",
-        price: "",
-        category: "Salad",
-      });
-      setImage(false);
-      toast.success(response.data.message);
-    } else {
-      toast.error(response.data.message);
+    try {
+      const res = await axios.post(
+        `${BASE_URL}/api/food/add`,
+        formData,
+        { headers: { token } }
+      );
+
+      if (res.data.success) {
+        toast.success("Added ✅");
+        setData({
+          name: "",
+          description: "",
+          price: "",
+          category: "Salad",
+        });
+        setImage(null);
+      }
+    } catch {
+      toast.error("Error ❌");
     }
   };
-  useEffect(()=>{
-    if(!admin && !token){
-      toast.error("Please Login First");
-       navigate("/");
-    }
-  },[])
+
   return (
-    <div className="add">
-      <form onSubmit={onSubmitHandler} className="flex-col">
-        <div className="add-img-upload flex-col">
-          <p>Upload image</p>
-          <label htmlFor="image">
-            <img
-              src={image ? URL.createObjectURL(image) : assets.upload_area}
-              alt=""
-            />
-          </label>
-          <input
-            onChange={(e) => setImage(e.target.files[0])}
-            type="file"
-            id="image"
-            hidden
-            required
-          />
-        </div>
-        <div className="add-product-name flex-col">
-          <p>Product name</p>
-          <input
-            onChange={onChangeHandler}
-            value={data.name}
-            type="text"
-            name="name"
-            placeholder="Type here"
-            required
-          />
-        </div>
-        <div className="add-product-description flex-col">
-          <p>Product description</p>
-          <textarea
-            onChange={onChangeHandler}
-            value={data.description}
-            name="description"
-            rows="6"
-            placeholder="Write content here"
-            required
-          ></textarea>
-        </div>
-        <div className="add-category-price">
-          <div className="add-category flex-col">
-            <p>Product category</p>
-            <select
-              name="category"
-              required
-              onChange={onChangeHandler}
-              value={data.category}
-            >
-              <option value="Salad">Salad</option>
-              <option value="Rolls">Rolls</option>
-              <option value="Deserts">Deserts</option>
-              <option value="Sandwich">Sandwich</option>
-              <option value="Cake">Cake</option>
-              <option value="Pure Veg">Pure Veg</option>
-              <option value="Pasta">Pasta</option>
-              <option value="Noodles">Noodles</option>
-            </select>
-          </div>
-          <div className="add-price flex-col">
-            <p>Product price</p>
-            <input
-              onChange={onChangeHandler}
-              value={data.price}
-              type="Number"
-              name="price"
-              placeholder="$20"
-              required
-            />
-          </div>
-        </div>
-        <button type="submit" className="add-btn">
-          ADD
-        </button>
-      </form>
-    </div>
+    <form onSubmit={submit} className="add">
+      <input
+        type="file"
+        onChange={(e) => setImage(e.target.files[0])}
+      />
+
+      <input
+        name="name"
+        value={data.name}
+        onChange={(e) =>
+          setData({ ...data, name: e.target.value })
+        }
+        placeholder="Name"
+      />
+
+      <textarea
+        name="description"
+        value={data.description}
+        onChange={(e) =>
+          setData({ ...data, description: e.target.value })
+        }
+      />
+
+      <input
+        type="number"
+        value={data.price}
+        onChange={(e) =>
+          setData({ ...data, price: e.target.value })
+        }
+      />
+
+      <button>Add Item</button>
+    </form>
   );
 };
 

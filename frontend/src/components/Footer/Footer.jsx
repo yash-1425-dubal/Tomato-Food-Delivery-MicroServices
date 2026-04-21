@@ -3,43 +3,71 @@ import "./Footer.css";
 import { assets } from "../../assets/frontend_assets/assets";
 
 const Footer = () => {
+
+  // ==========================
+  // SCROLL FUNCTION
+  // ==========================
+  const scrollToSection = (id) => {
+    document.getElementById(id)?.scrollIntoView({
+      behavior: "smooth",
+    });
+  };
+
   return (
     <div className="footer" id="footer">
       <div className="footer-content">
+
+        {/* LEFT */}
         <div className="footer-content-left">
-          <img src={assets.logo} alt="" />
+          <img src={assets.logo} alt="logo" />
+
           <p>
-            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Cumque
-            nostrum iure suscipit maiores non harum incidunt unde magnam
-            molestias ipsum qui vel aut natus aspernatur ipsa dignissimos,
-            numquam assumenda deserunt.
+            Discover delicious meals crafted with care. From fresh ingredients
+            to fast delivery, we bring your favorite food right to your doorstep.
           </p>
+
           <div className="footer-social-icons">
-            <img src={assets.facebook_icon} alt="" />
-            <img src={assets.twitter_icon} alt="" />
-            <img src={assets.linkedin_icon} alt="" />
+            <a href="https://facebook.com" target="_blank" rel="noreferrer">
+              <img src={assets.facebook_icon} alt="facebook" />
+            </a>
+
+            <a href="https://twitter.com" target="_blank" rel="noreferrer">
+              <img src={assets.twitter_icon} alt="twitter" />
+            </a>
+
+            <a href="https://linkedin.com" target="_blank" rel="noreferrer">
+              <img src={assets.linkedin_icon} alt="linkedin" />
+            </a>
           </div>
         </div>
+
+        {/* CENTER */}
         <div className="footer-content-center">
           <h2>Company</h2>
           <ul>
-            <li>Home</li>
+            <li onClick={() => window.scrollTo(0, 0)}>Home</li>
             <li>About us</li>
             <li>Delivery</li>
             <li>Privacy Policy</li>
           </ul>
         </div>
+
+        {/* RIGHT */}
         <div className="footer-content-right">
           <h2>Get in touch</h2>
           <ul>
-            <li>+92-308-4900522</li>
-            <li>contact@tomato.com</li>
+            <li>+91-9876543210</li>
+            <li>support@foodapp.com</li>
           </ul>
         </div>
+
       </div>
+
       <hr />
+
+      {/* COPYRIGHT */}
       <p className="footer-copyright">
-        Copyright 2024 @ Tomato.com - All Right Reserved.
+        © {new Date().getFullYear()} FoodApp — All Rights Reserved.
       </p>
     </div>
   );

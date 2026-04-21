@@ -3,55 +3,96 @@ import "./MyOrders.css";
 import { StoreContext } from "../../context/StoreContext";
 import axios from "axios";
 import { assets } from "../../assets/frontend_assets/assets";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const MyOrders = () => {
   const { url, token } = useContext(StoreContext);
-  const [data, setData] = useState([]);
+  const navigate = useNavigate();
 
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // ==========================
+  // FETCH ORDERS
+  // ==========================
   const fetchOrders = async () => {
-    const response = await axios.post(
-      url + "/api/order/userorders",
-      {},
-      { headers: { token } }
-    );
-    if (response.data.success) {
-      setData(response.data.data);
+    try {
+      setLoading(true);
+
+      const response = await axios.post(
+        `${url}/api/order/userorders`,
+        {},
+        { headers: { token } }
+      );
+
+      if (response.data.success) {
+        setData(response.data.data);
+      } else {
+        toast.error("Failed to fetch orders ❌");
+      }
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Server Error ❌");
+    } finally {
+      setLoading(false);
     }
   };
 
+  // ==========================
+  // AUTH CHECK
+  // ==========================
   useEffect(() => {
-    if (token) {
+    if (!token) {
+      toast.error("Please login first ❌");
+      navigate("/");
+    } else {
       fetchOrders();
     }
   }, [token]);
+
   return (
     <div className="my-orders">
-      <h2>Orders</h2>
-      <div className="container">
-        {data.map((order, index) => {
-          return (
+      <h2>My Orders</h2>
+
+      {loading ? (
+        <p>Loading orders...</p>
+      ) : data.length === 0 ? (
+        <p>No orders found</p>
+      ) : (
+        <div className="container">
+          {data.map((order, index) => (
             <div key={index} className="my-orders-order">
               <img src={assets.parcel_icon} alt="" />
+
+              {/* ITEMS */}
               <p>
-                {order.items.map((item, index) => {
-                  if (index === order.items.length - 1) {
-                    return item.name + " X " + item.quantity;
-                  } else {
-                    return item.name + " X " + item.quantity + ",";
-                  }
-                })}
+                {order.items?.map((item, idx) =>
+                  idx === order.items.length - 1
+                    ? `${item.name} x ${item.quantity}`
+                    : `${item.name} x ${item.quantity}, `
+                )}
               </p>
-              <p>${order.amount}.00</p>
-              <p>items: {order.items.length}</p>
+
+              {/* AMOUNT */}
+              <p>₹{order.amount}</p>
+
+              {/* COUNT */}
+              <p>Items: {order.items?.length || 0}</p>
+
+              {/* STATUS */}
               <p>
-                <span>&#x25cf;</span>
+                <span>●</span>
                 <b> {order.status}</b>
               </p>
-              <button onClick={fetchOrders}>Track Order</button>
+
+              {/* REFRESH */}
+              <button onClick={fetchOrders}>Refresh</button>
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

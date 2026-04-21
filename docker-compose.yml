@@ -1,0 +1,47 @@
+services:
+
+  user-service:
+    build: ./services/user-service
+    ports:
+      - "5001:5001"
+    env_file:
+      - ./services/user-service/.env
+
+  order-service:
+    build: ./services/order-service
+    ports:
+      - "5002:5002"
+    env_file:
+      - ./services/order-service/.env
+
+  payment-service:
+    build: ./services/payment-service
+    ports:
+      - "5003:5003"
+    env_file:
+      - ./services/payment-service/.env
+
+  food-service:
+    build: ./services/food-service
+    ports:
+      - "5004:5004"
+    env_file:
+      - ./services/food-service/.env
+
+  cart-service:
+    build: ./services/cart-service
+    ports:
+      - "5005:5005"
+    env_file:
+      - ./services/cart-service/.env
+
+  api-gateway:
+    build: ./services/api-gateway
+    ports:
+      - "5000:5000"
+    depends_on:
+      - user-service
+      - order-service
+      - payment-service
+      - food-service
+      - cart-service

@@ -1,26 +1,71 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import "./Navbar.css";
 import { assets } from "../../assets/frontend_assets/assets";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { StoreContext } from "../../context/StoreContext";
 import { toast } from "react-toastify";
 
 const Navbar = ({ setShowLogin }) => {
   const [menu, setMenu] = useState("home");
-  const { getTotalCartAmount, token, setToken } = useContext(StoreContext);
-  const navigate=useNavigate();
 
-  const logout=()=>{
+  const { getTotalCartAmount, token, setToken } =
+    useContext(StoreContext);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // ==========================
+  // SYNC MENU WITH ROUTE
+  // ==========================
+  useEffect(() => {
+    if (location.pathname === "/") setMenu("home");
+    else if (location.pathname === "/cart") setMenu("cart");
+    else if (location.pathname === "/myorders") setMenu("orders");
+  }, [location]);
+
+  // ==========================
+  // LOGOUT
+  // ==========================
+  const logout = () => {
     localStorage.removeItem("token");
     setToken("");
-    toast.success("Logout Successfully")
+    toast.success("Logged out successfully ✅");
     navigate("/");
-  }
+  };
+
+  // ==========================
+  // SCROLL HANDLER (HOME ONLY)
+  // ==========================
+  const handleScroll = (id, menuName) => {
+    setMenu(menuName);
+
+    if (location.pathname !== "/") {
+      navigate("/");
+      setTimeout(() => {
+        document.getElementById(id)?.scrollIntoView({
+          behavior: "smooth",
+        });
+      }, 300);
+    } else {
+      document.getElementById(id)?.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
+  };
+
   return (
     <div className="navbar">
+
+      {/* LOGO */}
       <Link to="/">
-        <img src={assets.logo} alt="" className="logo" />
+        <img
+          src={assets.logo}
+          alt="logo"
+          className="logo"
+        />
       </Link>
+
+      {/* MENU */}
       <ul className="navbar-menu">
         <Link
           to="/"
@@ -29,45 +74,67 @@ const Navbar = ({ setShowLogin }) => {
         >
           home
         </Link>
-        <a
-          href="#explore-menu"
-          onClick={() => setMenu("menu")}
+
+        <li
+          onClick={() => handleScroll("explore-menu", "menu")}
           className={menu === "menu" ? "active" : ""}
         >
           menu
-        </a>
-        <a
-          href="#app-download"
-          onClick={() => setMenu("mobile-app")}
+        </li>
+
+        <li
+          onClick={() => handleScroll("app-download", "mobile-app")}
           className={menu === "mobile-app" ? "active" : ""}
         >
           mobile-app
-        </a>
-        <a
-          href="#footer"
-          onClick={() => setMenu("contact-us")}
+        </li>
+
+        <li
+          onClick={() => handleScroll("footer", "contact-us")}
           className={menu === "contact-us" ? "active" : ""}
         >
           contact us
-        </a>
+        </li>
       </ul>
+
+      {/* RIGHT SIDE */}
       <div className="navbar-right">
-        <img src={assets.search_icon} alt="" />
+
+        {/* SEARCH ICON */}
+        <img src={assets.search_icon} alt="search" />
+
+        {/* CART */}
         <div className="navbar-search-icon">
           <Link to="/cart">
-            <img src={assets.basket_icon} alt="" />
+            <img src={assets.basket_icon} alt="cart" />
           </Link>
-          <div className={getTotalCartAmount() === 0 ? "" : "dot"}></div>
+
+          {getTotalCartAmount() > 0 && (
+            <div className="dot"></div>
+          )}
         </div>
+
+        {/* AUTH */}
         {!token ? (
-          <button onClick={() => setShowLogin(true)}>sign in</button>
+          <button onClick={() => setShowLogin(true)}>
+            Sign In
+          </button>
         ) : (
           <div className="navbar-profile">
-            <img src={assets.profile_icon} alt="" />
+            <img src={assets.profile_icon} alt="profile" />
+
             <ul className="nav-profile-dropdown">
-              <li onClick={()=>navigate("/myorders")}><img src={assets.bag_icon} alt="" /><p>Orders</p></li>
+              <li onClick={() => navigate("/myorders")}>
+                <img src={assets.bag_icon} alt="" />
+                <p>Orders</p>
+              </li>
+
               <hr />
-              <li onClick={logout}><img src={assets.logout_icon} alt="" /><p>Logout</p></li>
+
+              <li onClick={logout}>
+                <img src={assets.logout_icon} alt="" />
+                <p>Logout</p>
+              </li>
             </ul>
           </div>
         )}
