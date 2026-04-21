@@ -4,58 +4,39 @@ const cors = require("cors");
 
 const app = express();
 
-app.disable("x-powered-by");
-
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
-
+app.use(cors());
 app.use(express.json());
 
 // Health
 app.get("/health", (req, res) => {
-  res.status(200).json({ status: "OK" });
+  res.send("OK");
 });
-
-// ==============================
-// SERVICE DISCOVERY ROUTES
-// ==============================
 
 // USER
-app.use("/api/user", proxy("http://user-service.food.local:5001"));
+app.use("/api/user", proxy("http://13.206.88.14:5001", {
+  proxyReqPathResolver: (req) => req.originalUrl
+}));
 
 // CART
-app.use("/api/cart", proxy("http://cart-service.food.local:5002"));
+app.use("/api/cart", proxy("http://15.207.103.38:5002", {
+  proxyReqPathResolver: (req) => req.originalUrl
+}));
 
 // FOOD
-app.use("/api/food", proxy("http://food-service.food.local:5003"));
+app.use("/api/food", proxy("http://13.233.244.151:5003", {
+  proxyReqPathResolver: (req) => req.originalUrl
+}));
 
 // ORDER
-app.use("/api/order", proxy("http://order-service.food.local:5004"));
+app.use("/api/order", proxy("http://65.2.54.227:5004", {
+  proxyReqPathResolver: (req) => req.originalUrl
+}));
 
 // PAYMENT
-app.use("/api/payment", proxy("http://payment-service.food.local:5005"));
+app.use("/api/payment", proxy("http://3.110.92.83:5005", {
+  proxyReqPathResolver: (req) => req.originalUrl
+}));
 
-// ==============================
-// 404
-// ==============================
-app.use((req, res) => {
-  res.status(404).json({ message: "Route not found" });
-});
-
-// ==============================
-// ERROR HANDLER
-// ==============================
-app.use((err, req, res, next) => {
-  console.error("❌ Gateway Error:", err);
-  res.status(500).json({ message: "Gateway Error" });
-});
-
-// Start
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 API Gateway running on ${PORT}`);
+app.listen(process.env.PORT || 5000, "0.0.0.0", () => {
+  console.log("🚀 Gateway running");
 });
