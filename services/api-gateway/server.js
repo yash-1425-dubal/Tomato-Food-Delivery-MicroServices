@@ -13,7 +13,7 @@ app.get("/health", (req, res) => {
 });
 
 // USER
-app.use("/api/user", proxy("http://13.206.88.14:5001", {
+app.use("/api/user", proxy("http://3.108.5.179:5001", {
   proxyReqPathResolver: (req) => req.originalUrl
 }));
 
